@@ -39,7 +39,7 @@ ifneq ($(shell id -u), 0)
 endif
 	curl https://get.mocaccino.org/luet/get_luet_root.sh |  sh
 	luet install -y repository/mocaccino-extra-stable
-	luet install -y utils/jq utils/yq system/luet-devkit
+	luet install -y utils/jq utils/yq extension/makeiso
 endif
 
 clean:
@@ -99,12 +99,12 @@ $(ROOT_DIR)/build/conf.yaml: $(ROOT_DIR)/build
 local-iso: create-repo $(ROOT_DIR)/build/conf.yaml
 	yq w -i $(ROOT_DIR)/build/conf.yaml 'repositories[0].urls[0]' $(DESTINATION)
 	yq w -i $(ROOT_DIR)/build/conf.yaml 'repositories[0].type' 'disk'
-	$(LUET) geniso-isospec $(ISO_SPEC)
+	$(LUET) makeiso $(ISO_SPEC)
 
 iso: $(ROOT_DIR)/build/conf.yaml
 	yq w -i $(ROOT_DIR)/build/conf.yaml 'repositories[0].type' 'docker'
 	yq w -i $(ROOT_DIR)/build/conf.yaml 'repositories[0].urls[0]' $(FINAL_REPO)
-	$(LUET) geniso-isospec $(ISO_SPEC)
+	$(LUET) makeiso $(ISO_SPEC)
 
 $(ROOT_DIR)/.qemu:
 	mkdir -p $(ROOT_DIR)/.qemu
