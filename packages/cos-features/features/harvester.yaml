@@ -1,0 +1,23 @@
+stages:
+   network:
+     - name: "Setup k3s"
+       directories:
+       - path: "/usr/local/bin"
+         permissions: 0755
+         owner: 0
+         group: 0
+       commands:
+       - |
+            curl -sfL https://get.k3s.io | \
+            INSTALL_K3S_VERSION="v1.20.4+k3s1" \
+            INSTALL_K3S_EXEC="--data-dir /usr/local/rancher/k3s" \
+            sh -
+     - name: "Setup Longhorn"
+       commands:
+       - k3s --data-dir /usr/local/rancher-k3s kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v0.8.0/deploy/longhorn.yaml
+      - name: "Harvester"
+        commands:
+        - |
+            git clone https://github.com/rancher/harvester /run/harvester
+            k3s --data-dir /usr/local/rancher-k3s helm install
+name: "Rancher Harvester is an open source hyper-converged infrastructure (HCI) software built on Kubernetes. It is an open source alternative to vSphere and Nutanix."

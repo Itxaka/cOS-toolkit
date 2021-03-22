@@ -17,6 +17,9 @@ requires:
 - name: "immutable-rootfs"
   category: "system"
   version: ">=0"
+- name: cos-features
+  category: system
+  version: ">=0"
 
 steps:
 - sed -i 's/:VERSION:/{{.Values.version}}/g' setup.yaml
