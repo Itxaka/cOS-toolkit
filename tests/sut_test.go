@@ -26,18 +26,19 @@ type SUT struct {
 	Password string
 }
 
-func NewSUT(Host, Username, Password string) *SUT {
+func NewSUT() *SUT {
+
 	user := os.Getenv("COS_USER")
-	if Username == "" {
+	if user == "" {
 		user = "root"
 	}
 	pass := os.Getenv("COS_PASS")
-	if Password == "" {
+	if pass == "" {
 		pass = "cos"
 	}
 
 	host := os.Getenv("COS_HOST")
-	if Host == "" {
+	if host == "" {
 		host = "127.0.0.1:2222"
 	}
 	return &SUT{

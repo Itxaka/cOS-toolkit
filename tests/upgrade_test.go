@@ -8,7 +8,7 @@ import (
 var _ = Describe("cOS Upgrade tests", func() {
 	var s *SUT
 	BeforeEach(func() {
-		s = NewSUT("", "", "")
+		s = NewSUT()
 		s.EventuallyConnects()
 		s.Reset()
 	})

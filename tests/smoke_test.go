@@ -8,7 +8,7 @@ import (
 var _ = Describe("cOS Smoke tests", func() {
 	var s *SUT
 	BeforeEach(func() {
-		s = NewSUT("", "", "")
+		s = NewSUT()
 		s.EventuallyConnects()
 	})
 
