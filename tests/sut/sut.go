@@ -1,4 +1,4 @@
-package cos_test
+package sut
 
 import (
 	"fmt"
