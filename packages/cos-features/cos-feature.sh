@@ -38,24 +38,28 @@ list() {
 }
 
 enable() {
-  if [ ! -e "$FEATURESDIR/$1.yaml" ]; then
-    echo "Feature not present"
-    exit 1
-  fi
-  if [ ! -d "$OEMDIR/features" ]; then
-    mkdir $OEMDIR/features
-  fi
-  ln -s $FEATURESDIR/$1.yaml $OEMDIR/features/$1.yaml
-  echo "$1 enabled"
+  for i in $@; do
+    if [ ! -e "$FEATURESDIR/$i.yaml" ]; then
+      echo "Feature not present"
+      exit 1
+    fi
+    if [ ! -d "$OEMDIR/features" ]; then
+      mkdir $OEMDIR/features
+    fi
+    ln -s $FEATURESDIR/$i.yaml $OEMDIR/features/$i.yaml
+    echo "$i enabled"
+  done
 }
 
 disable() {
-  if [ -L "$OEMDIR/features/$1.yaml" ]; then
-    rm $OEMDIR/features/$1.yaml
-    echo "Feature $1 disabled"
-  else
-    echo "Feature $1 not enabled"
-  fi
+  for i in $@; do
+    if [ -L "$OEMDIR/features/$i.yaml" ]; then
+      rm $OEMDIR/features/$i.yaml
+      echo "Feature $i disabled"
+    else
+      echo "Feature $i not enabled"
+    fi
+  done
 }
 
 while [ "$#" -gt 0 ]; do
@@ -66,11 +70,11 @@ while [ "$#" -gt 0 ]; do
             ;;
         enable)
             shift 1
-            enable $1
+            enable $@
             ;;
         disable)
             shift 1
-            disable $1
+            disable $@
             ;;
         -h)
             usage

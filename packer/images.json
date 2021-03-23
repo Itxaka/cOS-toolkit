@@ -74,7 +74,7 @@
      {
         "inline": [
           "INTERACTIVE=false cos-installer --config /90_custom.yaml /dev/sda",
-          "if [ {{user `vagrant`}} == true ]; then mount /dev/disk/by-label/COS_OEM /oem; cos-feature enable vagrant; fi"
+          "if [ -n \"{{user `feature`}}\" ]; then mount /dev/disk/by-label/COS_OEM /oem; cos-feature enable {{user `feature`}}; fi"
         ],
         "pause_after": "30s",
         "type": "shell"
@@ -90,6 +90,6 @@
       "iso": "",
       "sleep": "30s",
       "accellerator": "kvm",
-      "vagrant": "false"
+      "feature": ""
     }
   }
