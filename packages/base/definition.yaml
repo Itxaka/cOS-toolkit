@@ -3,20 +3,3 @@ category: "distro"
 version: "0.3.4"
 
 hidden: true # No need to make it installable for now
-
-common_packages: >-
-    systemd
-    parted
-    dracut
-    e2fsprogs
-    dosfstools
-    coreutils
-    device-mapper
-    grub2
-    which
-    curl
-    nano
-    gawk
-    haveged
-    tar
-    rsync
