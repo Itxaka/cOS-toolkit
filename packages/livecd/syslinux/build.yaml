@@ -10,7 +10,7 @@ prelude:
 {{else if eq .Values.distribution "fedora" }}
 - dnf install -y wget
 {{else if eq .Values.distribution "ubuntu" }}
-- apt-get install -y wget
+- apt-get install -y wget || true
 {{end}}
 {{end}}
 - wget http://kernel.org/pub/linux/utils/boot/syslinux/syslinux-{{.Values.version}}.tar.xz

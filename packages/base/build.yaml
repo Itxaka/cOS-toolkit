@@ -1,5 +1,11 @@
 image: "{{.Values.image}}"
 
+env:
+{{ if .Values.distribution }}
+{{if eq .Values.distribution "ubuntu" }}
+- DEBIAN_FRONTEND=noninteractive
+{{end}}
+{{end}}
 steps:
 {{ if .Values.distribution }}
 {{if eq .Values.distribution "opensuse" }}
@@ -13,8 +19,9 @@ steps:
     kernel=$(ls /boot/vmlinuz-* | head -n1) && \
     ln -sf "${kernel#/boot/}" /boot/vmlinuz
 {{else if eq .Values.distribution "ubuntu" }}
-- apt-get update && apt-get install -y {{.Values.packages}} {{.Values.kernel_package}}
-- apt-get cleanup
+# Fun: https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1879558
+- apt-get update && apt-get install -y {{.Values.packages}} {{.Values.kernel_package}} || true
+- apt-get clean
 - |
     kernel=$(ls /boot/vmlinuz-* | head -n1) && \
     ln -sf "${kernel#/boot/}" /boot/vmlinuz
