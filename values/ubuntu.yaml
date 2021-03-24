@@ -1,0 +1,26 @@
+image: ubuntu:21.04
+distribution: "ubuntu"
+
+packages: >-
+    systemd-sysvinit
+    grub2-i386-pc
+    grub2-x86_64-efi
+    iproute2
+    squashfs
+    systemd
+    parted
+    dracut
+    e2fsprogs
+    dosfstools
+    coreutils
+    device-mapper
+    grub2
+    which
+    curl
+    nano
+    gawk
+    haveged
+    tar
+    rsync
+
+kernel_package: linux-image
