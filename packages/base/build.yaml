@@ -1,6 +1,7 @@
 image: "{{.Values.image}}"
 
 steps:
+{{ if .Values.distribution }}
 {{if eq .Values.distribution "opensuse" }}
 - zypper in -y --no-recommends {{.Values.packages}} {{.Values.kernel_package}}
 - zypper cc
@@ -11,5 +12,12 @@ steps:
 - |
     kernel=$(ls /boot/vmlinuz-* | head -n1) && \
     ln -sf "${kernel#/boot/}" /boot/vmlinuz
+{{else if eq .Values.distribution "ubuntu" }}
+- apt-get update && apt-get install -y {{.Values.packages}} {{.Values.kernel_package}}
+- apt-get cleanup
+- |
+    kernel=$(ls /boot/vmlinuz-* | head -n1) && \
+    ln -sf "${kernel#/boot/}" /boot/vmlinuz
+{{end}}
 {{end}}
 - kernel=$(ls /lib/modules | head -n1) && depmod -a "${kernel}"
