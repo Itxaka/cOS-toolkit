@@ -27,6 +27,19 @@ var _ = Describe("cOS Smoke tests", func() {
 			Expect(s.BootFrom()).To(Equal(sut.Active))
 		})
 
+		It("can boot into recovery", func() {
+			s.ChangeBoot(sut.Recovery)
+			By("rebooting into recovery")
+			s.Reboot()
+
+			Expect(s.BootFrom()).To(Equal(sut.Recovery))
+
+			By("switching back to active")
+			s.ChangeBoot(sut.Active)
+			s.Reboot()
+			Expect(s.BootFrom()).To(Equal(sut.Active))
+		})
+
 		It("is booting from COS_ACTIVE", func() {
 			out, err := s.Command("blkid -L COS_ACTIVE")
 			Expect(err).ToNot(HaveOccurred())
