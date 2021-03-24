@@ -12,7 +12,7 @@ prelude:
 {{else if eq .Values.distribution "fedora" }}
 - dnf install -y wget
 {{else if eq .Values.distribution "ubuntu" }}
-- apt-get install -y wget
+- apt-get install -y wget || true
 {{end}}
 {{end}}
 - wget https://github.com/ivandavidov/systemd-boot/releases/download/systemd-boot_26-May-2018/systemd-boot_26-May-2018.tar.xz

@@ -15,7 +15,8 @@ prelude:
 {{else if eq .Values.distribution "fedora" }}
 - dnf install -y git upx
 {{else if eq .Values.distribution "ubuntu" }}
-- apt-get install -y git upx
+# We have to add || true as system post-install of grub is broken due to efi and pc being installed together
+- apt-get install -y git upx || true
 {{end}}
 {{end}}
 - |
