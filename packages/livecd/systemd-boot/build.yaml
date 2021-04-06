@@ -1,20 +1,8 @@
 # This spec is meant to be consumed only from a root image which ends up being used as uefi image.
 # TODO: verify checksum
-requires:
-- name: "base"
-  category: "distro"
-  version: ">=0"
+image: busybox
 
 prelude:
-{{ if .Values.distribution }}
-{{if eq .Values.distribution "opensuse" }}
-- zypper in -y wget
-{{else if eq .Values.distribution "fedora" }}
-- dnf install -y wget
-{{else if eq .Values.distribution "ubuntu" }}
-- apt-get install -y wget || true
-{{end}}
-{{end}}
 - wget https://github.com/ivandavidov/systemd-boot/releases/download/systemd-boot_26-May-2018/systemd-boot_26-May-2018.tar.xz
 - mkdir -p /systemd-boot
 - tar -xvf systemd-boot_26-May-2018.tar.xz -C /systemd-boot

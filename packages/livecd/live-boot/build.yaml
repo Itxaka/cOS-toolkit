@@ -1,8 +1,5 @@
-requires:
-- name: "base"
-  category: "distro"
-  version: ">=0"
-
+image: busybox
+# TODO: verify checksum
 prelude:
 - mkdir -p /output
 
