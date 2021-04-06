@@ -256,7 +256,7 @@ install_grub()
         GRUB_TARGET="--target=x86_64-efi"
     fi
 
-    grub2-install ${GRUB_TARGET} --boot-directory=${STATEDIR} --removable ${DEVICE}
+    grub2-install ${GRUB_TARGET} --root-directory=${TARGET}  --boot-directory=${STATEDIR} --removable ${DEVICE}
 
     GRUBDIR=
     if [ -d "${STATEDIR}/grub" ]; then
