@@ -1,4 +1,4 @@
-image: ubuntu:21.04
+image: ubuntu:20.10
 distribution: "ubuntu"
 
 packages: >-
@@ -11,6 +11,7 @@ packages: >-
     squashfs-tools
     parted
     dracut
+    dracut-live
     e2fsprogs
     dosfstools
     coreutils
