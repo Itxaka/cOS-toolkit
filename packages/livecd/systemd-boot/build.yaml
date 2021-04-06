@@ -1,8 +1,9 @@
 # This spec is meant to be consumed only from a root image which ends up being used as uefi image.
 # TODO: verify checksum
-image: busybox
+image: alpine
 
 prelude:
+- apk add wget
 - wget https://github.com/ivandavidov/systemd-boot/releases/download/systemd-boot_26-May-2018/systemd-boot_26-May-2018.tar.xz
 - mkdir -p /systemd-boot
 - tar -xvf systemd-boot_26-May-2018.tar.xz -C /systemd-boot

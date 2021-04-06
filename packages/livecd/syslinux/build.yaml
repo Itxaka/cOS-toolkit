@@ -1,6 +1,7 @@
-image: busybox
+image: alpine
 # TODO: verify checksum
 prelude:
+- apk add wget
 - wget https://kernel.org/pub/linux/utils/boot/syslinux/syslinux-{{.Values.version}}.tar.xz
 - mkdir -p /syslinux
 - tar -xvf syslinux-{{.Values.version}}.tar.xz -C /syslinux
