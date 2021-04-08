@@ -1,0 +1,25 @@
+requires:
+- name: "base"
+  category: "distro"
+  version: ">=0"
+
+prelude:
+{{if .Values.is_opensuse}}
+- zypper in -y wget sed bzip2 && zypper install -y -t pattern devel_basis
+{{else if .Values.is_fedora}}
+- dnf install -y wget sed "@Development Tools"
+{{end}}
+- wget https://raw.githubusercontent.com/wiki/SELinuxProject/refpolicy/files/refpolicy-{{.Values.policy_version}}.tar.bz2 -O refpolicy-src.tar.bz2
+- tar xaf refpolicy-src.tar.bz2
+
+steps:
+- cp config /etc/selinux/config
+- cd refpolicy && make install-src
+- cd /etc/selinux/refpolicy/src/policy && make conf && \
+{{if .Values.is_opensuse}}
+  sed -e "s|^.*DISTRO *=.*$|DISTRO = suse|g" \
+{{else if .Values.is_fedora}}
+  sed -e "s|^.*DISTRO *=.*$|DISTRO = redhat|g" \
+{{end}}
+    -e "s|^.*DIRECT_INITRC *=.*$|DIRECT_INITRC=y|g" -i build.conf
+- cd /etc/selinux/refpolicy/src/policy && make install && make relabel

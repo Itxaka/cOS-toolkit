@@ -1,0 +1,9 @@
+name: "cos"
+category: "system"
+<<<<<<< HEAD
+version: 0.4.36
+=======
+version: "0.4.35"
+
+>>>>>>> 6808e88... WIP
+brand_name: "cOS"
