@@ -3,6 +3,8 @@ on:
   schedule:
     - cron:  '0 20 * * *'
   push:
+    branches:
+      - master
     paths:
     - 'conf/**'
     - 'packages/**'
@@ -10,6 +12,8 @@ on:
     - 'tests/**'
     - 'Makefile'
   pull_request:
+    branches:
+      - master
     paths:
     - 'conf/**'
     - 'packages/**'
