@@ -62,7 +62,7 @@ ifneq ($(shell id -u), 0)
 	@echo "Please run 'make $@' as root"
 	@exit 1
 endif
-	$(LUET) create-repo $(PUBLISH_ARGS) --tree "$(TREE)" \
+	$(LUET) --debug create-repo --plugin sign-images $(PUBLISH_ARGS) --tree "$(TREE)" \
     --output $(FINAL_REPO) \
     --packages $(DESTINATION) \
     --name "cOS" \
@@ -71,7 +71,6 @@ endif
     --tree-compression $(COMPRESSION) \
     --tree-filename tree.tar \
     --meta-compression $(COMPRESSION) \
-    --push-images \
     --type docker
 
 #

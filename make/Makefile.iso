@@ -41,7 +41,7 @@ $(MKSQUASHFS):
 
 .PHONY: create-repo
 create-repo: $(LUET) $(DESTINATION)
-	$(LUET) create-repo --tree "$(TREE)" \
+	$(LUET) create-repo --plugin sign-images --tree "$(TREE)" \
     --output $(DESTINATION) \
     --packages $(DESTINATION) \
     --name "cOS" \
