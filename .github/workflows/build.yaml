@@ -27,37 +27,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docker-build:
-    runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
-      matrix:
-        include:
-          - flavor: "opensuse"
-          - flavor: "fedora"
-          - flavor: "ubuntu"
-    env:
-      FLAVOR: ${{ matrix.flavor }}
-    steps:
-      - uses: actions/checkout@v2
-
-      - run: |
-          git fetch --prune --unshallow
-
-      - name: setup-docker
-        uses: docker-practice/actions-setup-docker@master
-
-      - name: Release space from worker
-        run: |
-          sudo rm -rf /usr/local/lib/android # will release about 10 GB if you don't need Android
-          sudo rm -rf /usr/share/dotnet # will release about 20GB if you don't need .NET
-
-      - name: Build  🔧
-        shell: 'script -q -e -c "bash {0}"'
-        run: |
-          source .envrc
-          cos-build $FLAVOR
-
   build:
     runs-on: ubuntu-latest
     strategy:
