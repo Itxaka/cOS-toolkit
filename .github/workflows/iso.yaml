@@ -32,10 +32,8 @@ jobs:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: build
           workflow_conclusion: success
-          commit: ${{github.event.pull_request.head.sha}}
-          github_token: ${{secrets.GITHUB_TOKEN}}
           name: build-${{ matrix.flavor }}
           path: build
 
