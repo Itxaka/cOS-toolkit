@@ -1,4 +1,4 @@
-name: iso
+name: packer-qemu
 on:
   workflow_dispatch: # for triggering it manually
 
@@ -7,8 +7,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  iso:
-    runs-on: ubuntu-latest
+  qemu:
+    runs-on: macos-10.15
     strategy:
       matrix:
         include:
@@ -22,40 +22,33 @@ jobs:
         uses: Sibz/github-status-action@v1
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: ${{ github.workflow }}
-          description: 'Build the iso'
+          context: "${{ github.workflow }} - qemu"
+          description: 'Build the qemu box'
           state: 'pending'
       - uses: actions/checkout@v2
-
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build
+          workflow: iso
           commit: ${{ github.sha }}
-          name: build-${{ matrix.flavor }}
-          path: build
-
+          name: cOS-${{ matrix.flavor }}.iso.zip
       - name: Install deps
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xorriso squashfs-tools
-          sudo -E make deps
-
-      - name: Build ISO from local build 🔧
-        if: github.event_name != 'schedule' && !startsWith(github.ref, 'refs/tags/')
+          brew install qemu
+      - name: Build QEMU Image 🔧
         run: |
-          sudo -E make local-iso
-
-      - name: Build ISO from remote repositories 🔧
-        if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/')
-        run: |
-          sudo -E make iso
+          PACKER_ARGS="-var='accelerator=hvf' -var='feature=vagrant' -only qemu" make packer
       - uses: actions/upload-artifact@v2
         with:
-          name: cOS-${{ matrix.flavor }}.iso.zip
+          name: cOS-${{ matrix.flavor }}.qcow
           path: |
-            *.iso
-            *.sha256
+            packer/*.tar.gz
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cOS-${{ matrix.flavor }}-QEMU.box
+          path: |
+            packer/*.box
           if-no-files-found: error
       - name: Set success
         if: success()
@@ -63,7 +56,7 @@ jobs:
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
           context: ${{ github.workflow }}
-          description: 'Build the iso'
+          description: 'Build the qemu box'
           state: 'success'
       - name: Set failure
         if: failure()
@@ -71,16 +64,5 @@ jobs:
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
           context: ${{ github.workflow }}
-          description: 'Build the iso'
+          description: 'Build the qemu box'
           state: 'failure'
-
-      - name: Invoke workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: packer-qemu
-          token: ${{ secrets.PERSONAL_TOKEN }}
-      - name: Invoke workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: packer-vbox
-          token: ${{ secrets.PERSONAL_TOKEN }}

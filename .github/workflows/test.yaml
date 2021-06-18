@@ -1,10 +1,6 @@
 name: test
 on:
   workflow_dispatch: # for triggering it manually
-  workflow_run:
-    workflows: [ "packer" ]
-    types:
-      - completed
 
 concurrency:
   group: ci-${{ github.head_ref || github.ref }}-${{ github.repository }}-${{ github.workflow }}
@@ -12,7 +8,6 @@ concurrency:
 
 jobs:
   tests:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     env:
       VAGRANT_CPU: 3
       VAGRANT_MEMORY: 10240
@@ -22,12 +17,25 @@ jobs:
         flavor: ["opensuse"]
         test: ["test-features", "test-smoke", "test-fallback", "test-recovery", "test-upgrades-images-signed", "test-upgrades-images-unsigned"]
     steps:
+      - name: Set pending
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Test ${{ matrix.test }}o'
+          state: 'pending'
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Install Go
         uses: actions/setup-go@v2
       - uses: actions/checkout@v2
       - name: Download vagrant box
         uses: actions/download-artifact@v2
         with:
+          workflow: packer-vbox
+          commit: ${{ github.sha }}
           name: cOS-${{ matrix.flavor }}-vbox.box
           path: packer
 
@@ -47,3 +55,24 @@ jobs:
           name: cOS-${{ matrix.test }}.logs.zip
           path: tests/**/logs/*
           if-no-files-found: warn
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Test ${{ matrix.test }}'
+          state: 'success'
+      - name: Set failure
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Test ${{ matrix.test }}'
+          state: 'failure'
+      - name: Invoke workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: publish
+          token: ${{ secrets.PERSONAL_TOKEN }}
