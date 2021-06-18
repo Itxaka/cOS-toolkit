@@ -10,12 +10,13 @@ prelude:
 {{else if eq .Values.distribution "fedora" }}
 - dnf install -y wget "@Development Tools"
 {{else if eq .Values.distribution "ubuntu" }}
+- apt-get update
 - apt-get install -y build-essential wget
 {{end}}
 {{end}}
 - |
   PACKAGE_VERSION=${PACKAGE_VERSION%\+*} && \
   wget https://golang.org/dl/go$PACKAGE_VERSION.linux-{{.Values.arch}}.tar.gz -O golang.tar.gz
-
+- echo "{{ ( index .Values.labels "package.checksum" ) }}  golang.tar.gz" | sha256sum -c
 steps:
 - tar -C /usr/local -xzf golang.tar.gz

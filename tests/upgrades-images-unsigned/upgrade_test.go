@@ -20,7 +20,7 @@ var _ = Describe("cOS Upgrade tests - Images unsigned", func() {
 	})
 	Context("After install", func() {
 		When("images are not signed", func() {
-			It("upgrades to latest available (master) and reset", func() {
+			It("upgrades to latest available (master) with --no-verify and reset", func() {
 				out, err := s.Command("source /etc/os-release && echo $VERSION")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(out).ToNot(Equal(""))
@@ -32,7 +32,7 @@ var _ = Describe("cOS Upgrade tests - Images unsigned", func() {
 				}
 				Expect(err).ToNot(HaveOccurred())
 				Expect(out).Should(ContainSubstring("Upgrade done, now you might want to reboot"))
-				Expect(out).Should(ContainSubstring("Booting from: active.img"))
+				Expect(out).Should(ContainSubstring("Upgrade target: active.img"))
 				By("rebooting")
 				s.Reboot()
 				Expect(s.BootFrom()).To(Equal(sut.Active))

@@ -2,8 +2,11 @@ package sut
 
 import (
 	"fmt"
+	"github.com/bramvdbogaerde/go-scp"
+	"github.com/bramvdbogaerde/go-scp/auth"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -114,15 +117,31 @@ func (s *SUT) BootFrom() int {
 		return Active
 	case strings.Contains(out, "COS_PASSIVE"):
 		return Passive
-	case strings.Contains(out, "COS_SYSTEM"):
+	case strings.Contains(out, "COS_RECOVERY"), strings.Contains(out, "COS_SYSTEM"):
 		return Recovery
 	default:
 		return UnknownBoot
 	}
 }
 
+// SquashFSRecovery returns true if we are in recovery mode and booting from squashfs
+func (s *SUT) SquashFSRecovery() bool {
+	out, err := s.command("cat /proc/cmdline", false)
+	ExpectWithOffset(1, err).ToNot(HaveOccurred())
+
+	return strings.Contains(out,"rd.live.squashimg")
+}
+
+func (s *SUT) GetOSRelease(ss string) string {
+	out, err := s.Command(fmt.Sprintf("source /etc/os-release && echo $%s", ss))
+	Expect(err).ToNot(HaveOccurred())
+	Expect(out).ToNot(Equal(""))
+
+	return out
+}
+
 func (s *SUT) EventuallyConnects(t ...int) {
-	dur := 120
+	dur := 180
 	if len(t) > 0 {
 		dur = t[0]
 	}
@@ -182,6 +201,43 @@ func (s *SUT) connectToHost(timeout bool) (*ssh.Client, error) {
 	}
 
 	return client, nil
+}
+
+// GatherLog will try to scp the given log from the machine to a local file
+func (s SUT) GatherLog(logPath string)  {
+	fmt.Printf("Trying to get file: %s\n", logPath)
+	clientConfig, _ := auth.PasswordKey(s.Username, s.Password, ssh.InsecureIgnoreHostKey())
+	scpClient := scp.NewClient(s.Host, &clientConfig)
+
+	err := scpClient.Connect()
+	if err != nil {
+		scpClient.Close()
+		fmt.Println("Couldn't establish a connection to the remote server ", err)
+		return
+	}
+
+	fmt.Printf("Connection to %s established!\n", s.Host)
+	baseName := filepath.Base(logPath)
+	_ = os.Mkdir("logs", 0755)
+
+	f, _ := os.Create(fmt.Sprintf("logs/%s", baseName))
+	// Close the file after it has been copied
+	// Close client connection after the file has been copied
+	defer scpClient.Close()
+	defer f.Close()
+
+
+	err = scpClient.CopyFromRemote(f, logPath)
+
+	if err != nil {
+		fmt.Printf("Error while copying file: %s\n", err.Error())
+		return
+	}
+	// Change perms so its world readable
+	_ = os.Chmod(fmt.Sprintf("logs/%s", baseName), 0666)
+	fmt.Printf("File %s copied!\n", baseName)
+
+
 }
 
 // DialWithDeadline Dials SSH with a deadline to avoid Read timeouts

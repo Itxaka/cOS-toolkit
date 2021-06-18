@@ -64,7 +64,12 @@ DESTINATION?=$(ROOT_DIR)/build
 #
 # yaml specification of build targets
 #
-export ISO_SPEC?=$(ROOT_DIR)/iso/cOS.yaml
+export MANIFEST?=$(ROOT_DIR)/manifest.yaml
+
+#
+# Arguments to packer for creating the ISO
+#
+PACKER_ARGS?=
 
 #----------------------- end global variables -----------------------
 
