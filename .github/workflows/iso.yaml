@@ -25,12 +25,13 @@ jobs:
           context: ${{ github.workflow }}
           description: 'Build the iso'
           state: 'pending'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - uses: actions/checkout@v2
 
-      - name: Download artifact
+      - name: Download build artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build
+          workflow: build.yaml
           commit: ${{ github.sha }}
           name: build-${{ matrix.flavor }}
           path: build
@@ -73,13 +74,14 @@ jobs:
           context: ${{ github.workflow }}
           description: 'Build the iso'
           state: 'failure'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 
-      - name: Invoke workflow
+      - name: Run packer-qemu workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: packer-qemu
           token: ${{ secrets.PERSONAL_TOKEN }}
-      - name: Invoke workflow
+      - name: Run packer-vbox workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: packer-vbox

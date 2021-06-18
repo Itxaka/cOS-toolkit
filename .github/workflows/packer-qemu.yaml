@@ -22,14 +22,15 @@ jobs:
         uses: Sibz/github-status-action@v1
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: "${{ github.workflow }} - qemu"
+          context: ${{ github.workflow }}
           description: 'Build the qemu box'
           state: 'pending'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - uses: actions/checkout@v2
-      - name: Download artifact
+      - name: Download ISO
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: iso
+          workflow: iso.yaml
           commit: ${{ github.sha }}
           name: cOS-${{ matrix.flavor }}.iso.zip
       - name: Install deps
@@ -58,6 +59,7 @@ jobs:
           context: ${{ github.workflow }}
           description: 'Build the qemu box'
           state: 'success'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Set failure
         if: failure()
         uses: Sibz/github-status-action@v1
@@ -66,3 +68,4 @@ jobs:
           context: ${{ github.workflow }}
           description: 'Build the qemu box'
           state: 'failure'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}

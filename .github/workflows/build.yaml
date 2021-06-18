@@ -2,6 +2,9 @@ name: build
 on:
   schedule:
     - cron:  '0 20 * * *'
+  push:
+    branches:
+      - master
   pull_request:
     paths:
       - 'conf/**'
@@ -82,9 +85,19 @@ jobs:
           name: build-${{ matrix.flavor }}
           path: build
           if-no-files-found: error
-      - name: Invoke workflow
+      - name: Run iso workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: iso
+          # We need a personal access token for triggering workflow with workflow_dispatch see: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token
+          token: ${{ secrets.PERSONAL_TOKEN }}
+          # This allows workflows chained to use the original PR ref for all their actions
+          # Otherwise if no ref is passed, the MASTER head ref is passed, which wrongly runs everything from master
+          # We also fallback to github.ref in case we are calling this from master
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+      - name: Run iso-nosquashfs workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: nosquashfs
           token: ${{ secrets.PERSONAL_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref || github.ref }}

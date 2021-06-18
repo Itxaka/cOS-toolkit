@@ -22,8 +22,9 @@ jobs:
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
           context: ${{ github.workflow }}
-          description: 'Test ${{ matrix.test }}o'
+          description: 'Test ${{ matrix.test }}'
           state: 'pending'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -32,9 +33,9 @@ jobs:
         uses: actions/setup-go@v2
       - uses: actions/checkout@v2
       - name: Download vagrant box
-        uses: actions/download-artifact@v2
+        uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: packer-vbox
+          workflow: packer-vbox.yaml
           commit: ${{ github.sha }}
           name: cOS-${{ matrix.flavor }}-vbox.box
           path: packer
@@ -63,6 +64,7 @@ jobs:
           context: ${{ github.workflow }}
           description: 'Test ${{ matrix.test }}'
           state: 'success'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Set failure
         if: failure()
         uses: Sibz/github-status-action@v1
@@ -71,7 +73,8 @@ jobs:
           context: ${{ github.workflow }}
           description: 'Test ${{ matrix.test }}'
           state: 'failure'
-      - name: Invoke workflow
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Run publish workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: publish
