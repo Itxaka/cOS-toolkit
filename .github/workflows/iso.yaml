@@ -1,26 +1,34 @@
 name: iso
 on:
   workflow_dispatch: # for triggering it manually
-  workflow_run:
-    workflows: [ "build" ]
-    types:
-      - completed
+
 concurrency:
   group: ci-${{ github.head_ref || github.ref }}-${{ github.repository }}-${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
   iso:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
           - flavor: "opensuse"
-    #         - flavor: "fedora"
-    #         - flavor: "ubuntu"
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Set pending
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the iso'
+          state: 'pending'
+          sha: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
@@ -52,3 +60,34 @@ jobs:
             *.iso
             *.sha256
           if-no-files-found: error
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the iso'
+          state: 'success'
+          sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Set failure
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the iso'
+          state: 'failure'
+          sha: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Invoke workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: packer-qemu
+          token: ${{ secrets.PERSONAL_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+      - name: Invoke workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: packer-vbox
+          token: ${{ secrets.PERSONAL_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}

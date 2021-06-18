@@ -1,10 +1,6 @@
-name: Build cOS - nosquashfs
+name: build-nosquashfs
 on:
   workflow_dispatch: # for triggering it manually
-  workflow_run:
-    workflows: [ "build" ]
-    types:
-      - completed
 
 jobs:
   iso-nosquashfs:
@@ -17,11 +13,22 @@ jobs:
     #         - flavor: "fedora"
     #         - flavor: "ubuntu"
     steps:
+      - name: Set pending
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'Build the iso - nosquashfs'
+          state: 'pending'
+          sha: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Download result for build
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: ${{ github.event.workflow.id }}
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: build-${{ matrix.flavor }}
           path: build
       - name: Install deps
@@ -50,6 +57,24 @@ jobs:
             *.iso
             *.sha256
           if-no-files-found: error
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'Build the iso - nosquashfs'
+          state: 'success'
+          sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Set failure
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'Build the iso - nosquashfs'
+          state: 'failure'
+          sha: ${{ github.event.workflow_run.head_sha }}
 
   vbox-nosquashfs:
     runs-on: macos-10.15
@@ -60,16 +85,22 @@ jobs:
           - flavor: "opensuse"
     #            - flavor: "fedora"
     steps:
+      - name: Set pending
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'Build the vbox box'
+          state: 'pending'
+          sha: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Download ISO
         uses: actions/download-artifact@v2
         with:
           name: cOS-nosquashfs-${{ matrix.flavor }}.iso.zip
 
-      # - name: Install deps
-      #   run: |
-      #     brew tap hashicorp/tap
-      #     brew install hashicorp/tap/packer
       - name: Build VBox Image 🔧
         run: |
           PACKER_ARGS="-var='feature=vagrant' -only virtualbox-iso" make packer
@@ -85,6 +116,24 @@ jobs:
           path: |
             packer/*.box
           if-no-files-found: error
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'Build the vbox box'
+          state: 'success'
+          sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Set failuire
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'Build the vbox box'
+          state: 'failure'
+          sha: ${{ github.event.workflow_run.head_sha }}
   tests-nosquashfs:
     runs-on: macos-10.15
     needs: vbox-nosquashfs
@@ -94,9 +143,19 @@ jobs:
         flavor: ["opensuse"]
         test: ["test-features", "test-smoke", "test-fallback", "test-recovery", "test-upgrades-images-signed", "test-upgrades-images-unsigned"]
     steps:
+      - name: Set pending
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'test'
+          state: 'pending'
+          sha: ${{ github.event.workflow_run.head_sha }}
       - name: Install Go
         uses: actions/setup-go@v2
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Download vagrant box
         uses: actions/download-artifact@v2
         with:
@@ -119,3 +178,21 @@ jobs:
           name: cOS-${{ matrix.test }}.logs.zip
           path: tests/**/logs/*
           if-no-files-found: warn
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'test'
+          state: 'success'
+          sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Set failure
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.job }}
+          description: 'test'
+          state: 'failure'
+          sha: ${{ github.event.workflow_run.head_sha }}

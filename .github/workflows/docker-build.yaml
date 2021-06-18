@@ -1,27 +1,6 @@
 name: docker-build
 on:
   workflow_dispatch: # for triggering it manually
-  schedule:
-    - cron:  '0 20 * * *'
-  push:
-    paths:
-      - 'conf/**'
-      - 'packages/**'
-      - '.github/**'
-      - 'tests/**'
-      - 'make/**'
-      - 'Makefile'
-  pull_request:
-    paths:
-      - 'conf/**'
-      - 'packages/**'
-      - 'make/**'
-      - '.github/**'
-      - 'Makefile'
-      - 'tests/**'
-  create:
-    tags:
-      - v*
 
 concurrency:
   group: ci-${{ github.head_ref || github.ref }}-${{ github.repository }}-${{ github.workflow }}
