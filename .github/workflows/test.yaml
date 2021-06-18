@@ -21,7 +21,7 @@ jobs:
         uses: Sibz/github-status-action@v1
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: ${{ github.workflow }}
+          context: ${{ matrix.test }}
           description: 'Test ${{ matrix.test }}'
           state: 'pending'
           target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
@@ -57,7 +57,7 @@ jobs:
         uses: Sibz/github-status-action@v1
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: ${{ github.workflow }}
+          context: ${{ matrix.test }}
           description: 'Test ${{ matrix.test }}'
           state: 'success'
           target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
@@ -66,12 +66,16 @@ jobs:
         uses: Sibz/github-status-action@v1
         with:
           authToken: ${{secrets.GITHUB_TOKEN}}
-          context: ${{ github.workflow }}
+          context: ${{ matrix.test }}
           description: 'Test ${{ matrix.test }}'
           state: 'failure'
           target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  trigger-publish:
+    runs-on: ubuntu-latest
+    steps:
       - name: Run publish workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: publish
           token: ${{ secrets.PERSONAL_TOKEN }}
+
