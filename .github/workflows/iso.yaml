@@ -17,10 +17,22 @@ jobs:
       matrix:
         include:
           - flavor: "opensuse"
-    #         - flavor: "fedora"
-    #         - flavor: "ubuntu"
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Set pending
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the iso'
+          state: 'pending'
+          sha: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
@@ -52,3 +64,21 @@ jobs:
             *.iso
             *.sha256
           if-no-files-found: error
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the iso'
+          state: 'success'
+          sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Set failure
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the iso'
+          state: 'failure'
+          sha: ${{ github.event.workflow_run.head_sha }}

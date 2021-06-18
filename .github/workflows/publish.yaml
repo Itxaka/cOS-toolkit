@@ -22,7 +22,8 @@ jobs:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: packer.yaml
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: build-${{ matrix.flavor }}
           path: build
       - run: |
@@ -71,24 +72,28 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: iso.yml
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: cOS-${{ matrix.flavor }}.iso.zip
           path: release
       - name: Download vbox image
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: packer.yml
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: cOS-${{ matrix.flavor }}-vbox.box
           path: release
       - name: Download OVA image
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: packer.yml
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: cOS-${{ matrix.flavor }}.ova
           path: release
       - name: Download QCOW image
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: packer.yml
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: cOS-${{ matrix.flavor }}.qcow
           path: release
       - name: Release

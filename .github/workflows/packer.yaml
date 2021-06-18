@@ -24,7 +24,8 @@ jobs:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: iso.yml
+          workflow: ${{ github.event.workflow.id }}
+          commit: ${{ github.event.workflow_run.head_sha }}
           name: cOS-${{ matrix.flavor }}.iso.zip
       - name: Install deps
         run: |
