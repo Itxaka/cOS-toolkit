@@ -8,7 +8,6 @@ concurrency:
 
 jobs:
   iso:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:

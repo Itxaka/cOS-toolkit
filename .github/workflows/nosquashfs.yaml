@@ -1,4 +1,4 @@
-name: Build cOS - nosquashfs
+name: nosquashfs
 on:
   workflow_dispatch: # for triggering it manually
 
