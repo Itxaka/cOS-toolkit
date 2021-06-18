@@ -1,15 +1,8 @@
 name: build
 on:
+  workflow_dispatch: # for triggering it manually
   schedule:
     - cron:  '0 20 * * *'
-  push:
-    paths:
-      - 'conf/**'
-      - 'packages/**'
-      - '.github/**'
-      - 'tests/**'
-      - 'make/**'
-      - 'Makefile'
   pull_request:
     paths:
       - 'conf/**'
@@ -33,8 +26,6 @@ jobs:
       matrix:
         include:
           - flavor: "opensuse"
-          - flavor: "fedora"
-          - flavor: "ubuntu"
     env:
       FLAVOR: ${{ matrix.flavor }}
     steps:
@@ -45,18 +36,6 @@ jobs:
 
       - name: setup-docker
         uses: docker-practice/actions-setup-docker@master
-
-      - name: Release space from worker
-        run: |
-          sudo rm -rf /usr/local/lib/android # will release about 10 GB if you don't need Android
-          sudo rm -rf /usr/share/dotnet # will release about 20GB if you don't need .NET
-
-      - name: Login to Quay Registry
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: echo ${{ secrets.QUAY_PASSWORD }} | docker login -u ${{ secrets.QUAY_USERNAME }} --password-stdin quay.io
-      - name: Set Push options
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: echo "BUILD_ARGS=--push --no-spinner --live-output --pull" >> $GITHUB_ENV
 
       - name: "Set PR options"
         if: ${{ github.event_name == 'pull_request' }}
