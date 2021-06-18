@@ -59,7 +59,7 @@ jobs:
       - name: Install deps
         run: |
           sudo -E make deps
-          sudo -E luet install --no-spinner -y --config .github/.luet.yaml toolchain/luet-mtree
+          sudo -E luet install -y --config .github/.luet.yaml toolchain/luet-mtree
 
       - name: Validate 🌳
         run: |
