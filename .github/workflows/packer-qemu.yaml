@@ -48,3 +48,26 @@ jobs:
           path: |
             packer/*.box
           if-no-files-found: error
+      - name: Set success
+        if: success()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the qemu box'
+          state: 'success'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Set failure
+        if: failure()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: ${{ github.workflow }}
+          description: 'Build the qemu box'
+          state: 'failure'
+          target_url: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Run tests workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: test
+          token: ${{ secrets.PERSONAL_TOKEN }}
