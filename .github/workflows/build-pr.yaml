@@ -17,29 +17,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
-
-
   build-opensuse:
-  
+
     runs-on: ubuntu-latest
-  
+
     env:
       FLAVOR: opensuse
       FINAL_REPO: quay.io/testitxaka/releases-opensuse
       DOWNLOAD_METADATA: false
-      PUSH_CACHE: false
+      PUSH_CACHE: true
     steps:
 
 
 
       - name: Install Go
         uses: actions/setup-go@v2
-        with:
-          go-version: 1.16
 
 
       - uses: actions/checkout@v2
+
+
+      - run: |
+          git fetch --prune --unshallow
 
 
       - name: setup-docker
@@ -48,10 +47,12 @@ jobs:
         run: |
           sudo rm -rf /usr/local/lib/android # will release about 10 GB if you don't need Android
           sudo rm -rf /usr/share/dotnet # will release about 20GB if you don't need .NET
-          sudo rm -rf /opt/ghc
-  
 
-  
+
+
+      - name: Login to Quay Registry
+        run: echo ${{ secrets.QUAY_PASSWORD }} | docker login -u ${{ secrets.QUAY_USERNAME }} --password-stdin quay.io
+
 
       - name: Install deps
         run: |
@@ -71,7 +72,21 @@ jobs:
           ./.github/build
           ls -liah $PWD/build
           sudo chmod -R 777 $PWD/build
-  
+
+      - name: Generate manifests
+        run: |
+          for f in build/*tar*; do
+            [ -e "$f" ] || continue
+            sudo -E luet mtree -- generate $f -o "$f.mtree"
+          done
+      - name: Append manifests to metadata
+        run: |
+          for f in build/*mtree; do
+            [ -e "$f" ] || continue
+            BASE_NAME=`basename -s .package.tar.zst.mtree $f`
+            sudo -E .github/append_manifests.py build/$BASE_NAME.metadata.yaml $f mtree
+          done
+
       - name: Create repo
         run: |
           sudo -E make create-repo
@@ -81,17 +96,14 @@ jobs:
           name: build-opensuse
           path: build
           if-no-files-found: error
-
   publish-opensuse:
     runs-on: ubuntu-latest
-    outputs:
-      publish: ${{ steps.publish.outputs.publish }}
+    needs: build-opensuse
     env:
       FLAVOR: opensuse
       FINAL_REPO: quay.io/testitxaka/releases-opensuse
       DOWNLOAD_METADATA: false
       PUSH_CACHE: false
-    needs: build-opensuse
     steps:
       - uses: actions/checkout@v2
       - name: Download result for build
@@ -104,7 +116,6 @@ jobs:
 
       - name: setup-docker
         uses: docker-practice/actions-setup-docker@master
-      - run: df -h
 
       # We patch docker to use all the HD available in GH action free runners
       - name: Patch Docker Daemon data-root
@@ -119,8 +130,6 @@ jobs:
 
       - name: Login to Quay Registry
         run: echo ${{ secrets.QUAY_PASSWORD }} | docker login -u ${{ secrets.QUAY_USERNAME }} --password-stdin quay.io
-
-
       - name: Install deps
         run: |
           sudo -E make deps
@@ -144,14 +153,9 @@ jobs:
           echo "::set-output name=publish::$(cat test.log)"
           exit $result_code  # This is the original status code from the command
 
-
-
-
   test-outputs:
     runs-on: ubuntu-latest
-    outputs:
-      publish: ${{ steps.publish.outputs.publish }}
-
     needs: publish-opensuse
     steps:
-      - run: echo ${{needs.publish-opensuse.outputs.publish}}
+      - run: echo ${{needs.publish-opensuse.steps.publish.outputs.publish}}
+
