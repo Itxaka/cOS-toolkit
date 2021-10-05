@@ -1,0 +1,22 @@
+task:
+  name: Test
+  container:
+    image: ubuntu:20.04
+    kvm: true
+
+  dependencies_script:
+    - apt-get update
+    - apt-get install -y libvirt-clients libvirt-daemon-system net-tools cpu-checker bridge-utils dnsmasq qemu-kvm qemu-utils virtinst
+    - echo 'user = "root"' >> /etc/libvirt/qemu.conf
+  # CI environment does not provide systemd,
+  # we have to start the daemons manually
+  dbus_background_script:
+    - mkdir -p /var/run/dbus
+    - /usr/bin/dbus-daemon --system --nofork --nopidfile
+  virtlogd_background_script:
+    - /usr/sbin/virtlogd
+  libvirtd_background_script:
+    - /usr/sbin/libvirtd
+  test_script:
+    - ps -ef
+    - find / -name libvirt-sock
