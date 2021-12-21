@@ -1,0 +1,32 @@
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      LUET_ARCH: x86_64
+      FLAVOR: green
+      ARCH: x86_64
+      PLUGINS: cleanup-images
+      FINAL_REPO: quay.io/costoolkit/releases-green
+      DOWNLOAD_METADATA: false
+      PUSH_CACHE: true
+      REPO_CACHE: quay.io/costoolkit/build-green-cache
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16'
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --prune --unshallow
+      - name: Run make deps
+        run: |
+          sudo -E make deps
+      - name: test
+        run: which luet-cosign
+      - name: test3
+        run: |
+          sudo ls -ltra /usr/
+          sudo ls -ltra /
