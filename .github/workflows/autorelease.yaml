@@ -1,0 +1,44 @@
+name: autorelease
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+concurrency:
+  group: ci-autorelease-${{ github.head_ref || github.ref }}-${{ github.repository }}
+  cancel-in-progress: true
+jobs:
+  autorelease:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mikefarah/yq@v4.25.1
+      - uses: technote-space/get-diff-action@v6
+        with:
+          FILES: |
+            packages/cos/collection.yaml
+      - name: Get current tag
+        if: env.GIT_DIFF
+        id: current
+        run: |
+          CURRENT_TAG=$(yq '.packages[]|select(.name=="cos" and .category =="system")|.version' packages/cos/collection.yaml)
+          echo "::set-output name=tag::v$CURRENT_TAG"
+      - name: Get previous tag
+        if: env.GIT_DIFF
+        id: previous
+        run: |
+          PREVIOUS_TAG=$(git describe --abbrev=0 --tags)
+          echo "::set-output name=tag::$PREVIOUS_TAG"
+      - name: Check if same tag as previous
+        id: check
+        run: |
+          if [[ "${{steps.current.outputs.tag}}" == "${{steps.previous.outputs.tag}}" ]]; then
+            echo "::set-output name=bumped::true"
+          else
+            echo "::set-output name=bumped::false"
+          fi
+      - uses: rickstaa/action-create-tag@v1
+        if: ${{steps.check.outputs.nope}} == "no,impossible,dont tag yet"
+        with:
+          tag: ${{steps.current.outputs.tag}}
+          message: "Bump tag"
