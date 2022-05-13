@@ -36,8 +36,14 @@ jobs:
             echo "Tag needs bump"
             echo "::set-output name=bumped::true"
           fi
-      - uses: rickstaa/action-create-tag@v1
+      - uses: actions/github-script@v6
         if: steps.check.outputs.bumped == 'true'
         with:
-          tag: ${{steps.current.outputs.tag}}
-          message: "Bump tag"
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{steps.current.outputs.tag}}",
+              sha: context.sha
+            })
+            
