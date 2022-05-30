@@ -1,8 +1,8 @@
-name: autorelease
+name: Autorelease
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * 6'
+    - cron: '*/5 * * * *'
 concurrency:
   group: ci-autorelease-${{ github.repository }}
   cancel-in-progress: true
@@ -41,9 +41,10 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_GITHUB_TOKEN }}
           script: |
+            console.log(context)
             console.log("Creating tag " + "${{steps.current.outputs.tag}}")
             github.rest.git.createRef({
-              owner: context.payload.repository.owner.login,
+              owner: "cOScibot@gmail.com",
               repo: context.payload.repository.name,
               ref: "refs/tags/${{steps.current.outputs.tag}}",
               sha: context.sha
